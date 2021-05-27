@@ -19,12 +19,14 @@ headers = {
 requests.packages.urllib3.disable_warnings()
 
 
-def get_user_favlist(user_id, save_dict):
+def get_user_favlist(user_id, save_dict, favlist_name):
     # https://api.bilibili.com/x/v3/fav/folder/created/list-all?up_mid=3916501
+    # 下载所有收藏夹
     user_url = "https://api.bilibili.com/x/v3/fav/folder/created/list-all?up_mid=" + \
         str(user_id)
     data_1 = json.loads(requests.get(user_url).text)
     favlist_list = []
+
     for dd in data_1['data']['list']:
         # 获取所有收藏夹ID
         # favlist_dict = {
@@ -32,20 +34,43 @@ def get_user_favlist(user_id, save_dict):
         #     'favlist_id': '48129101',
         #     'media_count': 20
         # }
-        favlist_dict = {
-            'favlist_title': dd['title'],
-            'favlist_id': dd['id'],
-            'media_count': dd['media_count']
-        }
 
-        favlist_list.append(favlist_dict)
+        # 根据收藏夹名下载
+        if favlist_name:
+            if favlist_name == dd['title']:
+                favlist_dict = {
+                    'favlist_title': dd['title'],
+                    'favlist_id': dd['id'],
+                    'media_count': dd['media_count']
+                }
 
-        favlist_dirname = (
-            save_dict +
-            favlist_dict['favlist_title']).encode("utf-8").decode("utf-8")
-        if not os.path.exists(favlist_dirname):
-            os.makedirs(favlist_dirname)
-            print(favlist_dict['favlist_title'] + '创建成功!')
+                favlist_list.append(favlist_dict)
+                favlist_dirname = (
+                        save_dict +
+                        favlist_dict['favlist_title']).encode("utf-8").decode("utf-8")
+                if not os.path.exists(favlist_dirname):
+                    os.makedirs(favlist_dirname)
+                    print(favlist_dict['favlist_title'] + '创建成功!')
+
+                break
+
+        else:
+            favlist_dict = {
+                'favlist_title': dd['title'],
+                'favlist_id': dd['id'],
+                'media_count': dd['media_count']
+            }
+
+            favlist_list.append(favlist_dict)
+            favlist_dirname = (
+                    save_dict +
+                    favlist_dict['favlist_title']).encode("utf-8").decode("utf-8")
+            if not os.path.exists(favlist_dirname):
+                os.makedirs(favlist_dirname)
+                print(favlist_dict['favlist_title'] + '创建成功!')
+
+
+
 
     # 遍历收藏夹
     for f in favlist_list:
@@ -179,7 +204,7 @@ def get_user_favlist(user_id, save_dict):
                         # print(video_data)
                         if not os.path.exists(
                                 video_dirname + '/' + video_data['video_name'] + '.mp4'):
-                            # get_video(video_data)
+                            get_video(video_data)
                             print(video_dirname)
                     df2 = pd.DataFrame(v, index=[0])
                     if not os.path.exists(
@@ -298,6 +323,10 @@ def donwnload(homeurl, url, name, session=requests.session()):
 
 
 if __name__ == '__main__':
-    user_id = 
-    save_dict = "D:/ttt/"
-    get_user_favlist(user_id, save_dict)
+    # 用户UID_123456
+    user_id = 0000000
+    # 保存到本地文件_"C:/ttt/"
+    save_dict = ""
+    # 收藏夹名称如果为空则下载所有收藏夹_"name"
+    favlist_name = ""
+    get_user_favlist(user_id, save_dict, favlist_name)
